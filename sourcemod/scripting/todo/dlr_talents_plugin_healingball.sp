@@ -2,16 +2,16 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <l4d2_simple_combat>
 
-#define PLUGIN_VERSION	"0.1"
+#define PLUGIN_VERSION	"0.2"
 #define CVAR_FLAGS		FCVAR_NONE
-
+#define PLUGIN_SKILL_NAME = "healing_ball"
+#define PLUGIN_SKILL_DESCRIPTION "Summons health orb around player to heal others."
 public Plugin myinfo =
 {
-	name = "治疗光圈",
-	author = "zonde306",
-	description = "",
+	name = "[DLR] Healing ball plugin version",
+	author = "zonde306, Yani",
+	description = PLUGIN_SKILL_DESCRIPTION,
 	version = PLUGIN_VERSION,
 	url = ""
 };
@@ -30,27 +30,17 @@ new g_BeamSprite, g_HaloSprite, g_GlowSprite;
 new Float:HealingBallInterval[MAXPLAYERS+1], Float:HealingBallEffect[MAXPLAYERS+1],
 	Float:HealingBallRadius[MAXPLAYERS+1], Float:HealingBallDuration[MAXPLAYERS+1];
 
-public void OnPluginStart()
+public void OnSpecialSkillUsed(int client, const char[] skillName)
 {
-	CreateTimer(1.0, Timer_SetupSpell);
-}
-
-public Action Timer_SetupSpell(Handle timer, any data)
-{
-	SC_CreateSpell("ss_healingball", "治疗光圈", 100, 4500);
-}
-
-public void SC_OnUseSpellPost(int client, const char[] classname)
-{
-	if(!StrEqual(classname, "ss_healingball", false))
+	if(!StrEqual(skillName, PLUGIN_SKILL_NAME, false))
 		return;
 	
 	HealingBallInterval[client] = 1.0;
-	HealingBallEffect[client] = 1.0 + ((SC_GetClientLevel(client) + 1) / 5.0);
-	HealingBallRadius[client] = 100.0 + (SC_GetClientLevel(client) * 5.0);
-	HealingBallDuration[client] = 5.0 + SC_GetClientLevel(client);
+	HealingBallEffect[client] = 1.5);
+	HealingBallRadius[client] = 130.0);
+	HealingBallDuration[client] = 8.0;
 	HealingBallFunction(client);
-	PrintToChat(client, "\x03[提示]\x01 你启动了 \x04治疗光圈\x01 持续 \x05%.0f\x01 秒。", HealingBallDuration[client]);
+	PrintToChat(client, "\x03[DLR]\x01 Healing ball now active\x01", HealingBallDuration[client]);
 }
 
 public void OnMapStart()
@@ -81,7 +71,6 @@ public Action:HealingBallFunction(Client)
 	GetTracePosition(Client, pos);
 	pos[2] += 50.0;
 	EmitAmbientSound(HealingBall_Sound_Lanuch, pos);
-	//(目标, 初始半径, 最终半径, 效果1, 效果2, 渲染贴(0), 渲染速率(15), 持续时间(10.0), 播放宽度(20.0),播放振幅(0.0), 顏色(Color[4]),(播放速度)10,(标识)0)
 	TE_SetupBeamRingPoint(pos, Radius-0.1, Radius, g_BeamSprite, g_HaloSprite, 0, 10, 1.0, 5.0, 5.0, BlueColor, 5, 0);//固定外圈BuleColor
 	TE_SendToAll();
 	
@@ -128,7 +117,6 @@ public Action:HealingBallTimerFunction(Handle:timer, Handle:pack)
 	//new iMaxEntities = GetMaxEntities();
 	new Float:Radius=HealingBallRadius[Client];
 	
-	//(目标, 初始半径, 最终半径, 效果1, 效果2, 渲染贴(0), 渲染速率(15), 持续时间(10.0), 播放宽度(20.0),播放振幅(0.0), 顏色(Color[4]),(播放速度)10,(标识)0)
 	TE_SetupBeamRingPoint(pos, Radius-0.1, Radius, g_BeamSprite, g_HaloSprite, 0, 10, 1.0, 10.0, 5.0, BlueColor, 5, 0);//固定外圈BuleColor
 	TE_SendToAll();
 
